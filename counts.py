@@ -1,3 +1,4 @@
+import sys
 import datasets
 import json
 import numpy as np
@@ -9,12 +10,11 @@ from datatrove.pipeline.readers import ParquetReader
 ## Load fineweb
 data_reader = ParquetReader("hf://datasets/HuggingFaceFW/fineweb/sample/10BT", progress=True)
 corpus = map(lambda doc: doc.text, data_reader())
-
 ## Compute frequencies
 # Get document frequencies for the dataset. Luckily, it's an English dataset, so we can limit to English
-vectorizer = CountVectorizer(stop_words='english')#(max_df=0.95, min_df=2, stop_words='english')
+# Changing the default CountVectorizer tokenization so hyphens are included as part of a word, meaning words like `non-binary` will be captured.
+vectorizer =CountVectorizer(token_pattern='(?u)\\b\\w[-\\w]+\\b', min_df=2, stop_words='english')#(max_df=0.95, min_df=2, stop_words='english')
 counts = vectorizer.fit_transform(corpus)
-
 vocab = vectorizer.get_feature_names_out()
 sum_counts = np.sum(counts, axis=0)
 sum_counts_list = np.asarray(sum_counts).tolist()[0]
