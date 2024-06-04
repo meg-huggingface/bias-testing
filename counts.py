@@ -1,0 +1,57 @@
+import datasets
+import json
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import CountVectorizer
+from datatrove.pipeline.readers import ParquetReader
+
+## Load fineweb
+data_reader = ParquetReader("hf://datasets/HuggingFaceFW/fineweb/sample/10BT", progress=True, limit=1000)
+corpus = map(lambda doc: doc.text, data_reader())
+
+## Compute frequencies
+# Get document frequencies for the dataset. Luckily, it's an English dataset, so we can limit to English
+vectorizer = CountVectorizer(stop_words='english')#(max_df=0.95, min_df=2, stop_words='english')
+count_vect = vectorizer.fit_transform(corpus)
+
+count_vect_dense = count_vect.todense()
+vocab = vectorizer.get_feature_names_out()
+counts = np.asarray(count_vect_dense.sum(axis=0)).ravel().tolist()
+counts_and_vocab = zip(counts, vocab)
+vocab_dict = {vocab:count for count, vocab in counts_and_vocab}
+with open('vocab_dict.json', 'w') as f:
+  json.dump(vocab_dict, f)
+
+# make a pie chart from gender_dict
+def to_pie_chart(subgroup_type, subgroup_dict, chart_title):
+    labels = list(subgroup_dict.keys())
+    values = list(subgroup_dict.values())
+    fig, ax = plt.subplots()
+    ax.pie(values, labels=labels, autopct="%1.1f%%", startangle=90)
+    ax.axis('equal')  # Equal aspect ratio ensures a circular pie chart
+    plt.title(chart_title)
+    fig.savefig(subgroup_type + "_piechart.png")
+
+## Gender
+gender_dict = {"man":vocab_dict["man"], "woman":vocab_dict["woman"]}
+try:
+  gender_dict["non-binary"] = vocab_dict["non-binary"]
+except KeyError:
+  pass
+to_pie_chart("gender", gender_dict, "Distribution of 'man', 'woman' and 'non-binary' terms")
+
+## Religion
+religion_dict = {}
+for religion in ['muslim', 'christian', 'jewish', 'hindu', 'buddhist', 'atheist']:
+    try:
+        religion_dict[religion] = vocab_dict[religion]
+    except KeyError:
+        pass
+to_pie_chart("religion", religion_dict, "Distibution of 'muslim', 'christian', 'jewish', 'hindu', 'buddhist', 'atheist' terms")
+
+## Age
+age_dict = {}
+for age in ['young', 'old']:
+    age_dict[age] = vocab_dict[age]
+to_pie_chart("age", age_dict, "Distribution of 'young' and 'old' terms")
