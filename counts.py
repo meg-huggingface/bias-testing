@@ -13,13 +13,19 @@ corpus = map(lambda doc: doc.text, data_reader())
 ## Compute frequencies
 # Get document frequencies for the dataset. Luckily, it's an English dataset, so we can limit to English
 vectorizer = CountVectorizer(stop_words='english')#(max_df=0.95, min_df=2, stop_words='english')
-count_vect = vectorizer.fit_transform(corpus)
+counts = vectorizer.fit_transform(corpus)
 
-count_vect_dense = count_vect.todense()
 vocab = vectorizer.get_feature_names_out()
-counts = np.asarray(count_vect_dense.sum(axis=0)).ravel().tolist()
-counts_and_vocab = zip(counts, vocab)
+sum_counts = np.sum(counts, axis=0)
+sum_counts_list = np.asarray(sum_counts).tolist()[0]
+
+counts_and_vocab = zip(sum_counts_list, vocab)
 vocab_dict = {vocab:count for count, vocab in counts_and_vocab}
+#count_vect_dense = count_vect.todense()
+#vocab = vectorizer.get_feature_names_out()
+#counts = np.asarray(count_vect_dense.sum(axis=0)).ravel().tolist()
+#counts_and_vocab = zip(counts, vocab)
+#vocab_dict = {vocab:count for count, vocab in counts_and_vocab}
 with open('vocab_dict.json', 'w') as f:
   json.dump(vocab_dict, f)
 
@@ -39,7 +45,7 @@ try:
   gender_dict["non-binary"] = vocab_dict["non-binary"]
 except KeyError:
   pass
-to_pie_chart("gender", gender_dict, "Distribution of 'man', 'woman' and 'non-binary' terms")
+to_pie_chart("gender", gender_dict, "Distribution of gender terms: 'man', 'woman', 'non-binary'")
 
 ## Religion
 religion_dict = {}
@@ -48,10 +54,10 @@ for religion in ['muslim', 'christian', 'jewish', 'hindu', 'buddhist', 'atheist'
         religion_dict[religion] = vocab_dict[religion]
     except KeyError:
         pass
-to_pie_chart("religion", religion_dict, "Distibution of 'muslim', 'christian', 'jewish', 'hindu', 'buddhist', 'atheist' terms")
+to_pie_chart("religion", religion_dict, "Distribution of religion terms: 'muslim', 'christian', 'jewish', 'hindu', 'buddhist', 'atheist'")
 
 ## Age
 age_dict = {}
 for age in ['young', 'old']:
     age_dict[age] = vocab_dict[age]
-to_pie_chart("age", age_dict, "Distribution of 'young' and 'old' terms")
+to_pie_chart("age", age_dict, "Distribution of age terms: 'young', 'old'")
