@@ -7,7 +7,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from datatrove.pipeline.readers import ParquetReader
 
 ## Load fineweb
-data_reader = ParquetReader("hf://datasets/HuggingFaceFW/fineweb/sample/10BT", progress=True, limit=100000)
+data_reader = ParquetReader("hf://datasets/HuggingFaceFW/fineweb/sample/10BT", progress=True)
 corpus = map(lambda doc: doc.text, data_reader())
 
 ## Compute frequencies
@@ -54,7 +54,7 @@ for religion in ['muslim', 'christian', 'jewish', 'hindu', 'buddhist', 'atheist'
         religion_dict[religion] = vocab_dict[religion]
     except KeyError:
         pass
-to_pie_chart("religion", religion_dict, "Distribution of religion terms: 'muslim', 'christian', 'jewish', 'hindu', 'buddhist', 'atheist'")
+to_pie_chart("religion", religion_dict, "Distribution of religion terms")# 'muslim', 'christian', 'jewish', 'hindu', 'buddhist', 'atheist'")
 
 ## Age
 age_dict = {}
