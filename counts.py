@@ -7,7 +7,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from datatrove.pipeline.readers import ParquetReader
 
 ## Load fineweb
-data_reader = ParquetReader("hf://datasets/HuggingFaceFW/fineweb/sample/10BT", progress=True, limit=1000)
+data_reader = ParquetReader("hf://datasets/HuggingFaceFW/fineweb/sample/10BT", progress=True, limit=100000)
 corpus = map(lambda doc: doc.text, data_reader())
 
 ## Compute frequencies
