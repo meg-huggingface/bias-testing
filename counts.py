@@ -7,28 +7,39 @@ import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import CountVectorizer
 from datatrove.pipeline.readers import ParquetReader
 
-## Load fineweb
-data_reader = ParquetReader("hf://datasets/HuggingFaceFW/fineweb/sample/10BT", progress=True)
-corpus = map(lambda doc: doc.text, data_reader())
-## Compute frequencies
-# Get document frequencies for the dataset. Luckily, it's an English dataset, so we can limit to English
-# Changing the default CountVectorizer tokenization so hyphens are included as part of a word, meaning words like `non-binary` will be captured.
-vectorizer =CountVectorizer(token_pattern='(?u)\\b\\w[-\\w]+\\b', min_df=2, stop_words='english')#(max_df=0.95, min_df=2, stop_words='english')
-counts = vectorizer.fit_transform(corpus)
-vocab = vectorizer.get_feature_names_out()
-sum_counts = np.sum(counts, axis=0)
-sum_counts_list = np.asarray(sum_counts).tolist()[0]
+from_scratch = False
 
-counts_and_vocab = zip(sum_counts_list, vocab)
-vocab_dict = {vocab:count for count, vocab in counts_and_vocab}
-#count_vect_dense = count_vect.todense()
-#vocab = vectorizer.get_feature_names_out()
-#counts = np.asarray(count_vect_dense.sum(axis=0)).ravel().tolist()
-#counts_and_vocab = zip(counts, vocab)
-#vocab_dict = {vocab:count for count, vocab in counts_and_vocab}
-with open('vocab_dict.json', 'w') as f:
-  json.dump(vocab_dict, f)
+if from_scratch:
+    ## Load fineweb
+    data_reader = ParquetReader("hf://datasets/HuggingFaceFW/fineweb/sample/10BT", progress=True)
+    corpus = map(lambda doc: doc.text, data_reader())
+    ## Compute frequencies
+    # Get document frequencies for the dataset. Luckily, it's an English dataset, so we can limit to English
+    # Changing the default CountVectorizer tokenization so hyphens are included as part of a word, meaning words like `non-binary` will be captured.
+    vectorizer =CountVectorizer(token_pattern='(?u)\\b\\w[-\\w]+\\b', min_df=2, stop_words='english')#(max_df=0.95, min_df=2, stop_words='english')
+    counts = vectorizer.fit_transform(corpus)
+    vocab = vectorizer.get_feature_names_out()
+    sum_counts = np.sum(counts, axis=0)
+    sum_counts_list = np.asarray(sum_counts).tolist()[0]
 
+    counts_and_vocab = zip(sum_counts_list, vocab)
+    vocab_dict = {vocab:count for count, vocab in counts_and_vocab}
+    #count_vect_dense = count_vect.todense()
+    #vocab = vectorizer.get_feature_names_out()
+    #counts = np.asarray(count_vect_dense.sum(axis=0)).ravel().tolist()
+    #counts_and_vocab = zip(counts, vocab)
+    #vocab_dict = {vocab:count for count, vocab in counts_and_vocab}
+    with open('vocab_dict.json', 'w') as f:
+        json.dump(vocab_dict, f)
+
+else:
+    with open('vocab_dict.json', 'r') as f:
+        vocab_dict = json.load(f)
+
+
+print("old: %d" % vocab_dict['old'])
+print("young: %d" % vocab_dict['young'])
+sys.exit()
 # make a pie chart from gender_dict
 def to_pie_chart(subgroup_type, subgroup_dict, chart_title):
     labels = list(subgroup_dict.keys())
